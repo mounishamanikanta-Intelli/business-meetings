@@ -193,7 +193,7 @@ function HomePageContent({
   return (
     <div className="min-h-screen bg-white">
       {/* 1. Hero Section with Proper Slideshow */}
-      <HeroSlideshow hero={hero} about={about}/>
+      <HeroSlideshow hero={hero} />
 
       {/* 2. Navigation Blocks Section */}
       <NavigationBlocks />
@@ -205,15 +205,15 @@ function HomePageContent({
             <div className="animate-fade-in-up">
               <div className="mb-6">
                 <span className="text-orange-500 font-semibold text-lg tracking-wide uppercase">About Us</span>
-                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 mt-2">
-                  {about?.primaryBrandName || 'Nursing'}{' '}
-                  <span className="inline bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mt-2 leading-tight">
+                  {about?.primaryBrandName || 'Nursing'}
+                  <span className="block bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                     {about?.secondaryBrandText || 'Conference 2026'}
                   </span>
                 </h2>
               </div>
 
-              <div className="prose prose-lg text-slate-600 mb-8 max-w-none text-justify leading-7 tracking-normal">
+              <div className="prose prose-lg text-slate-600 mb-8 max-w-none">
                 {about?.description ? (
                   <div className="space-y-6">
                     {/* Show truncated content from backend */}
@@ -284,6 +284,37 @@ function HomePageContent({
       {/* 6. Conference Sessions and Tracks Section */}
       <ConferenceTracksSection />
 
+      {/* 7 & 8. Venue & Location - Merged Section (Full-width stacked: Gallery on top, Info below) */}
+      {(venueSettings?.venueImages && venueSettings.venueImages.length > 0) || venueSettings ? (
+        <section className="py-6 md:py-8 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-4 md:mb-5">
+              <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3 md:mb-4">
+                Venue & Location
+              </h2>
+              <p className="text-base sm:text-lg text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                Explore our stunning venue, location details and map to plan your visit.
+              </p>
+            </div>
+
+            {/* Full-width Composite: Gallery + Location Info with tighter spacing */}
+            <div className="space-y-3 md:space-y-4">
+              {/* Gallery (full width) */}
+              {venueSettings?.venueImages && venueSettings.venueImages.length > 0 && (
+                <VenueImageGallery
+                  images={venueSettings.venueImages}
+                  title="Conference Venue"
+                />
+              )}
+
+              {/* Venue & Location Information (full width, compact padding) */}
+              <div className="bg-white border border-gray-200 rounded-lg p-3 md:p-4 lg:p-5 pb-1 md:pb-2 lg:pb-3 mb-0">
+                <AboutLocationSection venueSettings={venueSettings} />
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <ConferenceAwardsSection />
 

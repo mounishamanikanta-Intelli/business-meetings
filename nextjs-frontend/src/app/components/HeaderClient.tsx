@@ -475,6 +475,12 @@ const HeaderClient = memo(function HeaderClient({ siteSettings }: HeaderClientPr
             Brochure
           </Link>
           <Link
+            href="/venue"
+            className="text-gray-700 hover:text-orange-600 font-medium transition-colors text-sm md:text-base whitespace-nowrap"
+          >
+            Venue
+          </Link>
+          <Link
             href="/submit-abstract"
             className="text-gray-700 hover:text-orange-600 font-medium transition-colors text-sm md:text-base whitespace-nowrap"
           >
@@ -590,6 +596,13 @@ const HeaderClient = memo(function HeaderClient({ siteSettings }: HeaderClientPr
               onClick={closeMenu}
             >
               Brochure
+            </Link>
+            <Link
+              href="/venue"
+              className="block px-3 py-3 text-gray-700 hover:text-orange-600 font-medium hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={closeMenu}
+            >
+              Venue
             </Link>
             <Link
               href="/submit-abstract"

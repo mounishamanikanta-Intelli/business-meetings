@@ -16,7 +16,6 @@ import imageUrlBuilder from '@sanity/image-url';
 import { client } from '@/app/sanity/client';
 import { get } from 'http';
 import { getHeroSection } from '../getHeroSection';
-import BlinkText from '../components/HeroBlinkText';
 import HeroBlinkText from '../components/HeroBlinkText';
 
 // Initialize the image URL builder
@@ -46,6 +45,7 @@ interface FormData {
   checkInDate: string;
   checkOutDate: string;
   currency?: string;
+  institution: string;
 }
 
 // Countries list from reference site
@@ -173,6 +173,24 @@ function RegistrationPageContent() {
   }, [conferenceData]);
 
 
+  //For check in checkout dates 
+  useEffect(() => {
+  if (registrationSettings?.conferenceDetails?.conferenceDate) {
+    const conferenceDate = new Date(registrationSettings.conferenceDetails.conferenceDate);
+    const defaultCheckIn = new Date(conferenceDate);
+    defaultCheckIn.setDate(conferenceDate.getDate() - 3);
+    
+    const checkInStr = defaultCheckIn.toISOString().split('T')[0];
+    
+    setCheckInDate('');
+    setCheckOutDate('');
+    
+    console.log('✅ Dates set from registration settings:', {
+      conferenceDate: registrationSettings.conferenceDetails.conferenceDate,
+      checkInDate: checkInStr
+    });
+  }
+}, [registrationSettings]);
 
 
 
@@ -193,6 +211,25 @@ function RegistrationPageContent() {
         clearSelection('sponsorshipType');
       } else if (groupName === 'sponsorshipType' && value) {
         clearSelection('registrationType');
+      }
+
+
+      // ✅ Set default dates ONLY when accommodation is selected
+      if (groupName === 'accommodation' && value) {
+        if (registrationSettings?.conferenceDetails?.conferenceDate) {
+          const conferenceDate = new Date(registrationSettings.conferenceDetails.conferenceDate);
+          const defaultCheckIn = new Date(conferenceDate);
+          defaultCheckIn.setDate(conferenceDate.getDate() - 3);
+          const checkInStr = defaultCheckIn.toISOString().split('T')[0];
+          setCheckInDate(checkInStr);
+          setCheckOutDate(checkInStr);
+        }
+      }
+
+      // ✅ Clear dates when accommodation is deselected
+      if (groupName === 'accommodation' && !value) {
+        setCheckInDate('');
+        setCheckOutDate('');
       }
 
       // Clear registration ID when selection changes to force re-registration
@@ -227,6 +264,7 @@ function RegistrationPageContent() {
     checkInDate: '',
     checkOutDate: '',
     currency: '',
+    institution: '',
   });
 
   // Handle input changes
@@ -265,17 +303,17 @@ function RegistrationPageContent() {
     if (checkInDate && checkOutDate) {
       const checkIn = new Date(checkInDate);
       const checkOut = new Date(checkOutDate);
-      
+
       // Reset time parts to get accurate day difference
       checkIn.setHours(0, 0, 0, 0);
       checkOut.setHours(0, 0, 0, 0);
-      
+
       const diffTime = checkOut.getTime() - checkIn.getTime();
       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-      
+
       // Calculate nights: if selecting 3 days (20, 21, 22), that's 2 nights
       const numberOfNights = diffDays ;
-      
+
       // Validate that check-out is after or equal to check-in
       if (diffDays < 0) {
         // If check-out is before check-in, reset
@@ -581,6 +619,7 @@ function RegistrationPageContent() {
       if (!formData.phoneNumber.trim()) missingFields.push('Phone Number');
       if (!formData.country.trim()) missingFields.push('Country');
       if (!formData.fullPostalAddress.trim()) missingFields.push('Full Postal Address');
+      if (!formData.institution.trim()) missingFields.push('Institution');
 
       if (missingFields.length > 0) {
         alert(`Please fill in the following required fields:\n• ${missingFields.join('\n• ')}`);
@@ -616,6 +655,7 @@ function RegistrationPageContent() {
         // Further Information
         country: formData.country,
         fullPostalAddress: formData.fullPostalAddress,
+        institution: formData.institution,
 
         // Registration Selection (using new format)
         selectedRegistration: selectedRegistrationType || '',
@@ -672,6 +712,7 @@ function RegistrationPageContent() {
           phoneNumber: '',
           country: '',
           fullPostalAddress: '',
+          institution: '',
           selectedRegistration: '',
           sponsorType: '',
           accommodationType: '',
@@ -965,7 +1006,7 @@ function RegistrationPageContent() {
               <h2 className="text-lg font-bold text-white text-center">Further Information</h2>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Country */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
@@ -997,6 +1038,21 @@ function RegistrationPageContent() {
                     autoComplete="street-address"
                     rows={1}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Institution or Organization <span className="text-red-500">*</span></label> 
+                  <input
+                    type="text"
+                    id="institution"
+                    name="institution"
+                    placeholder="Institution *"
+                    value={formData.institution}
+                    onChange={(e) => handleInputChange('institution', e.target.value)}
+                    autoComplete="organization"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
                   />
                 </div>
               </div>
@@ -1322,6 +1378,291 @@ function RegistrationPageContent() {
             </div>
           </div>
 
+          {/* Accommodation Registration - Modern Design */}
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="bg-blue-800 text-white px-6 py-3 rounded-t-lg">
+              <h2 className="text-lg font-bold text-white text-center">Accommodation Registration</h2>
+            </div>
+            <div className="p-6">
+              {/* Loading State */}
+              {dynamicLoading && (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Loading accommodation options...</p>
+                </div>
+              )}
+
+              {/* Error State */}
+              {dynamicError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center">
+                    <div className="text-red-600">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Error Loading Accommodation Data</h3>
+                      <p className="text-sm text-red-700 mt-1">{dynamicError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Dynamic Accommodation Options */}
+              {dynamicData && dynamicData.accommodationOptions && (
+                <div className="space-y-6">
+                  {dynamicData.accommodationOptions
+                    .filter(hotel => hotel.isActive)
+                    .sort((a, b) => a.displayOrder - b.displayOrder)
+                    .map((hotel) => (
+                      <div key={hotel._id} className="space-y-4">
+                        <div className="text-center">
+                          <h3 className="text-lg font-semibold text-gray-800">{hotel.hotelName}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{hotel.description}</p>
+                        </div>
+
+                        {/* Room Options as Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {hotel.roomOptions?.map((roomOption) => {
+                            const accommodationKey = `${hotel._id}-${roomOption.roomType}`;
+                            const pricePerNight = getAccommodationPrice(roomOption);
+                            const isRoomSelected = isSelected('accommodation', accommodationKey);
+                            const totalPrice = pricePerNight * accommodationNights;
+
+                            return (
+                              <div
+                                key={roomOption.roomType}
+                                className={`relative border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                                  isRoomSelected
+                                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                                    : 'border-gray-300 bg-white hover:border-gray-400 hover:shadow-sm'
+                                }`}
+                                onClick={() => handleRadioChange('accommodation', accommodationKey)}
+                              >
+                                {/* Checkbox */}
+                                <div className="absolute top-3 right-3">
+                                  <input
+                                    type="checkbox"
+                                    checked={isRoomSelected}
+                                    onChange={() => handleRadioChange('accommodation', accommodationKey)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="w-5 h-5 focus:ring-blue-500 accent-blue-600"
+                                  />
+                                </div>
+
+                                {/* Room Type */}
+                                <h4 className="font-bold text-base text-gray-900 mb-2 pr-8">
+                                  {roomOption.roomType}
+                                </h4>
+
+                                {/* Room Description */}
+                                <p className="text-sm text-gray-600 mb-3">
+                                  {roomOption.roomDescription}
+                                </p>
+
+                                {/* Price Per Night */}
+                                <div className="mb-3">
+                                  <div className="text-xs text-gray-500 mb-1">Price per night</div>
+                                  <div className="text-xl font-bold text-blue-600">
+                                    {formatPrice(pricePerNight)}
+                                  </div>
+                                </div>
+
+                                {/* Selected State - Show Total */}
+                                {isRoomSelected && (
+                                  <div className="mt-3 pt-3 border-t border-blue-200">
+                                    <div className="flex justify-between items-center text-sm">
+                                      <span className="text-gray-700">
+                                        {accommodationNights} night{accommodationNights !== 1 ? 's' : ''}
+                                      </span>
+                                      <span className="font-bold text-blue-700">
+                                        Total: {formatPrice(totalPrice)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Check-in and Check-out Date Selector - Calendar View */}
+                        {hotel.roomOptions?.some(ro => isSelected('accommodation', `${hotel._id}-${ro.roomType}`)) && (
+                          <div className="bg-white border border-gray-300 rounded-lg p-3 max-w-xs mx-auto">
+                            {/* Date Range Display */}
+                            <div className="mb-2 pb-2 border-b border-gray-200">
+                              <div className="flex items-center gap-1 text-[10px] text-gray-600 mb-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span className="font-semibold">DATES{checkInDate && checkOutDate ? ` (${accommodationNights} NIGHT${accommodationNights !== 1 ? 'S' : ''})` : ''}</span>
+                              </div>
+                              <div className="flex items-center justify-between text-xs">
+                                <div>
+                                  <div className="text-[9px] text-gray-500 mb-0.5">Check-in</div>
+                                  <div className="font-semibold text-gray-900">
+                                    {checkInDate ? new Date(checkInDate).toLocaleDateString('en-US', {
+                                      weekday: 'short',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    }) : '—'}
+                                  </div>
+                                </div>
+                                <div className="text-gray-400 text-sm mx-1">→</div>
+                                <div>
+                                  <div className="text-[9px] text-gray-500 mb-0.5">Check-out</div>
+                                  <div className="font-semibold text-gray-900">
+                                    {checkOutDate ? new Date(checkOutDate).toLocaleDateString('en-US', {
+                                      weekday: 'short',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    }) : '—'}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Calendar Section */}
+                            <div className="space-y-2">
+
+                               {/* Helper Text */}
+                              <div className="text-center text-[9px] text-black-500">
+                                <b>Note: Click and drag to select</b>
+                              </div>
+
+                              {/* Month Header */}
+                              <div className="text-center">
+                                <h3 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">
+                                  {new Date(registrationSettings?.conferenceDetails?.conferenceDate || '2026-06-23').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                                </h3>
+                              </div>
+
+                              {/* Calendar Grid */}
+                              <div className="bg-white">
+                              
+                                {/* Day Headers */}
+                                <div className="grid grid-cols-7 mb-1">
+                                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+                                    <div key={`${day}-${idx}`} className="text-center text-[9px] font-semibold text-gray-500 py-0.5">
+                                      {day}
+                                    </div>
+                                  ))}
+                                </div>
+
+                                {/* Calendar Days */}
+                                <div className="grid grid-cols-7">
+                                  {(() => {
+                                    // Conference date: June 23, 2025 - 3 days before and after
+                                    const conferenceDate = new Date(registrationSettings?.conferenceDetails?.conferenceDate || '2026-06-23');
+                                    const year = conferenceDate.getFullYear();
+                                    const month = conferenceDate.getMonth(); // 5 for June (0-indexed)
+                                    
+                                    const firstDay = new Date(year, month, 1).getDay();
+                                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                                    
+                                    // Calculate enabled range: 3 days before to 3 days after conference
+                                    const minDate = new Date(conferenceDate);
+                                    minDate.setDate(conferenceDate.getDate() - 3); // June 20
+                                    
+                                    const maxDate = new Date(conferenceDate);
+                                    maxDate.setDate(conferenceDate.getDate() + 3); // June 26
+                                    
+                                    const checkInDateObj = new Date(checkInDate);
+                                    const checkOutDateObj = new Date(checkOutDate);
+                                    
+                                    const days = [];
+                                    
+                                    // Add empty cells for days before month starts
+                                    for (let i = 0; i < firstDay; i++) {
+                                      days.push(
+                                        <div key={`empty-${i}`} className="w-8 h-8"></div>
+                                      );
+                                    }
+                                    
+                                    // Add all days of the month
+                                    for (let day = 1; day <= daysInMonth; day++) {
+                                      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                      const date = new Date(dateStr);
+                                      const isEnabled = date >= minDate && date <= maxDate;
+                                      const isCheckIn = dateStr === checkInDate;
+                                      const isCheckOut = dateStr === checkOutDate;
+                                      const isInRange = date > checkInDateObj && date < checkOutDateObj;
+                                      const isSingleDay = isCheckIn && isCheckOut;
+                                      const isStartOfRange = isCheckIn && !isSingleDay;
+                                      const isEndOfRange = isCheckOut && !isSingleDay;
+                                      
+                                      days.push(
+                                        <button
+                                          key={day}
+                                          type="button"
+                                          disabled={!isEnabled}
+                                          onMouseDown={(e) => {
+                                            if (isEnabled) {
+                                              e.preventDefault();
+                                              handleCalendarMouseDown(dateStr);
+                                            }
+                                          }}
+                                          onMouseEnter={(e) => {
+                                            if (isEnabled) {
+                                              handleCalendarMouseEnter(dateStr);
+                                            }
+                                          }}
+                                          onMouseUp={(e) => {
+                                            e.preventDefault();
+                                            handleCalendarMouseUp();
+                                          }}
+                                          onTouchStart={(e) => {
+                                            if (isEnabled) {
+                                              e.preventDefault();
+                                              handleCalendarMouseDown(dateStr);
+                                            }
+                                          }}
+                                          onTouchMove={(e) => {
+                                            if (isEnabled && isDragging) {
+                                              const touch = e.touches[0];
+                                              const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                                              const dateAttr = element?.getAttribute('data-date');
+                                              if (dateAttr) {
+                                                const touchDate = new Date(dateAttr);
+                                                if (touchDate >= minDate && touchDate <= maxDate) {
+                                                  handleCalendarMouseEnter(dateAttr);
+                                                }
+                                              }
+                                            }
+                                          }}
+                                          onTouchEnd={(e) => {
+                                            e.preventDefault();
+                                            handleCalendarMouseUp();
+                                          }}
+                                          data-date={dateStr}
+                                          className={`w-8 h-8 flex items-center justify-center text-[11px] font-medium transition-all select-none relative
+                                            ${!isEnabled ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
+                                            ${isEnabled && !isCheckIn && !isCheckOut && !isInRange ? 'text-gray-700 hover:bg-gray-100' : ''}
+                                            ${(isStartOfRange || isSingleDay) ? 'bg-blue-600 text-white font-bold rounded-l-full' : ''}
+                                            ${(isEndOfRange) ? 'bg-blue-600 text-white font-bold rounded-r-full' : ''}
+                                            ${isInRange ? 'bg-blue-600 text-white font-bold' : ''}
+                                          `}
+                                        >
+                                          <span className="relative z-10">{day}</span>
+                                        </button>
+                                      );
+                                    }
+                                    
+                                    return days;
+                                  })()}
+                                </div>
+                              </div>
+
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
 
 
 
@@ -1400,6 +1741,10 @@ function RegistrationPageContent() {
                     <span>{formatPrice(priceCalculation.totalRegistrationPrice)}</span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
+                    <span className="font-medium">Accommodation Registration Price :</span>
+                    <span>{formatPrice(priceCalculation.accommodationPrice)}</span>
+                  </div>
+                  <div className="flex justify-between py-2 border-b">
                     <span className="font-medium">Accompanying Persons ({formData.numberOfAccompanyingPersons}) :</span>
                     <span>{formatPrice(priceCalculation.accompanyingPersonsCost)}</span>
                   </div>
@@ -1420,7 +1765,7 @@ function RegistrationPageContent() {
                 {(() => {
                   // Check form validation (allow single character names and addresses)
                   const isFormValid = formData.firstName.trim() && formData.lastName.trim() && formData.email.trim() &&
-                                     formData.phoneNumber.trim() && formData.country.trim() && formData.fullPostalAddress.trim();
+                                     formData.phoneNumber.trim() && formData.country.trim() && formData.fullPostalAddress.trim() && formData.institution.trim();
 
                   // Check if registration type or sponsorship is selected
                   const selectedRegistrationType = getSelection('registrationType');
@@ -1483,7 +1828,7 @@ function RegistrationPageContent() {
                         <button
                           type="submit"
                           disabled={isLoading}
-                          className="w-full bg-blue-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="w-full bg-green-600 text-white py-3 px-6 rounded-md font-semibold hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {isLoading ? 'Saving Registration...' : 'Save Registration & Continue to Payment'}
                         </button>
@@ -1514,8 +1859,9 @@ function RegistrationPageContent() {
                         </div>
 
                         {/* Payment Buttons Grid - Rows on mobile, side by side on larger screens */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 items-stretch">
-                          {/* PayPal Payment Option */}
+                        <div className={`grid ${selectedCurrency === 'INR' ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'} gap-3 sm:gap-4 items-stretch`}>
+                          {/* PayPal Payment Option — hidden for INR (Razorpay only) */}
+                          {selectedCurrency !== 'INR' && (
                           <div className="space-y-2 flex flex-col h-full">
                             <div className="text-center">
                               <h4 className="font-medium text-gray-700 mb-1 text-sm sm:text-base">PayPal</h4>
@@ -1542,6 +1888,7 @@ function RegistrationPageContent() {
                               </PayPalErrorBoundary>
                             </div>
                           </div>
+                          )}
 
                           {/* Razorpay Payment Option */}
                           <div className="space-y-2 flex flex-col h-full">
