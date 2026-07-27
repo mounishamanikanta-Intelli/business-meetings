@@ -112,7 +112,7 @@ function BrochureHeroClient({ imageUrl, overlayPercent , conferenceData }: { ima
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center">
-          <h1 className="uppercase text-3xl md:text-5xl font-extrabold text-white tracking-wide drop-shadow-md">
+          <h1 className="uppercase text-2xl md:text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
             {conferenceData?.conferenceSubject}
           </h1>
           <h4 className="text-xl md:text-xl text-white drop-shadow-md">

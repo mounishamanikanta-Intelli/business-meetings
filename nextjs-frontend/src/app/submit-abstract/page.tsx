@@ -157,7 +157,7 @@ export default function AbstractSubmissionPage() {
       />
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center">
-          <h1 className="uppercase text-3xl md:text-5xl font-extrabold text-white tracking-wide drop-shadow-md">
+          <h1 className="uppercase text-3xl md:text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
             {conferenceData?.hero?.conferenceSubject}
           </h1>
           <HeroBlinkText
