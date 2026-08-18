@@ -18,7 +18,7 @@ export default async function ContactPage() {
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-3xl font-bold text-white mb-6">
             {conferenceData?.conferenceSubject}
           </h1>
           <h2 className="text-xl md:text-xl text-white drop-shadow-md">

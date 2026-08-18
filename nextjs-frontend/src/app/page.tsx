@@ -205,15 +205,15 @@ function HomePageContent({
             <div className="animate-fade-in-up">
               <div className="mb-6">
                 <span className="text-orange-500 font-semibold text-lg tracking-wide uppercase">About Us</span>
-                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mt-2 leading-tight">
-                  {about?.primaryBrandName || 'Nursing'}
-                  <span className="block bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
-                    {about?.secondaryBrandText || 'Conference 2026'}
+                <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 mt-2">
+                  {about?.primaryBrandName || 'Business'}{' '}
+                  <span className="inline bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
+                    {about?.secondaryBrandText || 'Summits 2027'}
                   </span>
                 </h2>
               </div>
 
-              <div className="prose prose-lg text-slate-600 mb-8 max-w-none">
+              <div className="prose prose-lg text-slate-600 mb-8 max-w-none text-justify leading-7 tracking-normal">
                 {about?.description ? (
                   <div className="space-y-6">
                     {/* Show truncated content from backend */}

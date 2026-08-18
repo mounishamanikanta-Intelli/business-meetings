@@ -71,9 +71,9 @@ export default async function AboutPage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-            <h1 className="uppercase text-3xl md:text-5xl font-bold text-white mb-6">
+            <h2 className="uppercase text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4 text-white">
             {conferenceData?.conferenceSubject}
-            </h1>
+            </h2>
             <h2 className="text-xl md:text-xl text-white drop-shadow-md">
               {conferenceData?.conferenceVenue} - {conferenceData?.conferenceDate}
             </h2>

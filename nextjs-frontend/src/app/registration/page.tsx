@@ -869,7 +869,7 @@ function RegistrationPageContent() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
-          <h1 className="uppercase text-3xl md:text-5xl font-extrabold text-white tracking-wide drop-shadow-md">
+          <h1 className="uppercase text-3xl md:text-3xl font-extrabold text-white tracking-wide drop-shadow-md">
             {conferenceData?.hero?.conferenceSubject}
           </h1>
           <HeroBlinkText
